@@ -1,0 +1,345 @@
+============================================================
+REQUIREMENT FORMAT INVOICE PPOB
+============================================================
+
+Berikut adalah standar format input (request body) dan output (invoice format)
+untuk setiap jenis layanan PPOB berdasarkan tipe layanan.
+
+---------------------------------------------------------
+1. LAYANAN: PAJAK (Pajak PBB)
+---------------------------------------------------------
+[INPUT BODY]
+{
+  "customer_name": "Budi Santoso",
+  "customer_address": "Jl. Melati No. 10, Jakarta",
+  "nop": "32.75.080.012.001-1234.0",
+  "service_code": "PAJAK"
+}
+
+[INVOICE OUTPUT]
+---------------------------------------------------------
+INVOICE PEMBAYARAN PAJAK PBB
+---------------------------------------------------------
+Nama Pelanggan     : Budi Santoso
+Alamat             : Jl. Melati No. 10, Jakarta
+NOP                : 32.75.080.012.001-1234.0
+Layanan            : Pajak PBB
+Tagihan Pokok      : Rp40.000
+Biaya Admin        : Rp2.500
+Total Pembayaran   : Rp42.500
+Tanggal Transaksi  : {tanggal_transaksi}
+Status             : Berhasil
+---------------------------------------------------------
+
+
+---------------------------------------------------------
+2. LAYANAN: PLN_PRABAYAR (Listrik)
+---------------------------------------------------------
+[INPUT BODY]
+{
+  "customer_name": "Andi Wijaya",
+  "meter_number": "12345678901",
+  "nominal": 10000,
+  "service_code": "PLN"
+}
+
+[INVOICE OUTPUT]
+---------------------------------------------------------
+INVOICE PEMBELIAN TOKEN LISTRIK
+---------------------------------------------------------
+Nama Pelanggan     : Andi Wijaya
+No. Meter          : 12345678901
+Nominal Token      : Rp10.000
+Biaya Admin        : Rp1.500
+Total Pembayaran   : Rp11.500
+Token Listrik      : 8946-2351-7789-2345
+Tanggal Transaksi  : {tanggal_transaksi}
+Status             : Berhasil
+---------------------------------------------------------
+
+
+---------------------------------------------------------
+3. LAYANAN: PDAM_PASCABAYAR
+---------------------------------------------------------
+[INPUT BODY]
+{
+  "customer_name": "Rina Kurnia",
+  "no_pelanggan": "PDAM123456",
+  "periode": "10-2025",
+  "service_code": "PDAM"
+}
+
+[INVOICE OUTPUT]
+---------------------------------------------------------
+INVOICE PEMBAYARAN AIR PDAM
+---------------------------------------------------------
+Nama Pelanggan     : Rina Kurnia
+No. Pelanggan      : PDAM123456
+Periode Tagihan    : Oktober 2025
+Tagihan Pokok      : Rp40.000
+Biaya Admin        : Rp3.000
+Total Pembayaran   : Rp43.000
+Tanggal Transaksi  : {tanggal_transaksi}
+Status             : Berhasil
+---------------------------------------------------------
+
+
+---------------------------------------------------------
+4. LAYANAN: PULSA_PRABAYAR
+---------------------------------------------------------
+[INPUT BODY]
+{
+  "customer_name": "Dewi Lestari",
+  "nomor_hp": "081234567890",
+  "nominal": 40000,
+  "service_code": "PULSA"
+}
+
+[INVOICE OUTPUT]
+---------------------------------------------------------
+INVOICE PEMBELIAN PULSA
+---------------------------------------------------------
+Nama Pelanggan     : Dewi Lestari
+Nomor HP           : 081234567890
+Nominal Pulsa      : Rp40.000
+Biaya Admin        : Rp1.000
+Total Pembayaran   : Rp41.000
+Tanggal Transaksi  : {tanggal_transaksi}
+Status             : Berhasil
+---------------------------------------------------------
+
+
+---------------------------------------------------------
+5. LAYANAN: PGN_PASCABAYAR
+---------------------------------------------------------
+[INPUT BODY]
+{
+  "customer_name": "Ahmad Fauzi",
+  "id_pelanggan": "PGN998877",
+  "periode": "10-2025",
+  "service_code": "PGN"
+}
+
+[INVOICE OUTPUT]
+---------------------------------------------------------
+INVOICE PEMBAYARAN GAS PGN
+---------------------------------------------------------
+Nama Pelanggan     : Ahmad Fauzi
+ID Pelanggan       : PGN998877
+Periode Tagihan    : Oktober 2025
+Tagihan Pokok      : Rp50.000
+Biaya Admin        : Rp2.500
+Total Pembayaran   : Rp52.500
+Tanggal Transaksi  : {tanggal_transaksi}
+Status             : Berhasil
+---------------------------------------------------------
+
+
+---------------------------------------------------------
+6. LAYANAN: MUSIK BERLANGGANAN
+---------------------------------------------------------
+[INPUT BODY]
+{
+  "customer_name": "Tania Puspita",
+  "paket": "Premium",
+  "periode": "1 Bulan",
+  "service_code": "MUSIK"
+}
+
+[INVOICE OUTPUT]
+---------------------------------------------------------
+INVOICE LANGGANAN MUSIK
+---------------------------------------------------------
+Nama Pelanggan     : Tania Puspita
+Paket              : Premium
+Durasi             : 1 Bulan
+Biaya Langganan    : Rp50.000
+Biaya Admin        : Rp2.000
+Total Pembayaran   : Rp52.000
+Tanggal Transaksi  : {tanggal_transaksi}
+Status             : Aktif
+---------------------------------------------------------
+
+
+---------------------------------------------------------
+7. LAYANAN: TV BERLANGGANAN
+---------------------------------------------------------
+[INPUT BODY]
+{
+  "customer_name": "Fajar Hidayat",
+  "id_pelanggan": "TV00991",
+  "paket": "Gold",
+  "periode": "1 Bulan",
+  "service_code": "TV"
+}
+
+[INVOICE OUTPUT]
+---------------------------------------------------------
+INVOICE LANGGANAN TV
+---------------------------------------------------------
+Nama Pelanggan     : Fajar Hidayat
+ID Pelanggan       : TV00991
+Paket              : Gold
+Durasi             : 1 Bulan
+Biaya Langganan    : Rp50.000
+Biaya Admin        : Rp2.500
+Total Pembayaran   : Rp52.500
+Tanggal Transaksi  : {tanggal_transaksi}
+Status             : Aktif
+---------------------------------------------------------
+
+
+---------------------------------------------------------
+8. LAYANAN: PAKET_DATA_PRABAYAR
+---------------------------------------------------------
+[INPUT BODY]
+{
+  "customer_name": "Sinta Dewi",
+  "nomor_hp": "081234567890",
+  "paket_data": "10GB",
+  "service_code": "PAKET_DATA"
+}
+
+[INVOICE OUTPUT]
+---------------------------------------------------------
+INVOICE PEMBELIAN PAKET DATA
+---------------------------------------------------------
+Nama Pelanggan     : Sinta Dewi
+Nomor HP           : 081234567890
+Paket Data         : 10GB
+Biaya Paket        : Rp50.000
+Biaya Admin        : Rp1.500
+Total Pembayaran   : Rp51.500
+Tanggal Transaksi  : {tanggal_transaksi}
+Status             : Berhasil
+---------------------------------------------------------
+
+
+---------------------------------------------------------
+9. LAYANAN: VOUCHER_GAME
+---------------------------------------------------------
+[INPUT BODY]
+{
+  "customer_name": "Rizky Saputra",
+  "game_id": "PUBG12345",
+  "nominal": 100000,
+  "service_code": "VOUCHER_GAME"
+}
+
+[INVOICE OUTPUT]
+---------------------------------------------------------
+INVOICE PEMBELIAN VOUCHER GAME
+---------------------------------------------------------
+Nama Pelanggan     : Rizky Saputra
+Game ID            : PUBG12345
+Nominal Voucher    : Rp100.000
+Biaya Admin        : Rp5.000
+Total Pembayaran   : Rp105.000
+Kode Voucher       : GAME-9842-9911-5542
+Tanggal Transaksi  : {tanggal_transaksi}
+Status             : Berhasil
+---------------------------------------------------------
+
+
+---------------------------------------------------------
+10. LAYANAN: VOUCHER_MAKANAN
+---------------------------------------------------------
+[INPUT BODY]
+{
+  "customer_name": "Citra Anggraini",
+  "merchant": "FoodHub",
+  "nominal": 100000,
+  "service_code": "VOUCHER_MAKANAN"
+}
+
+[INVOICE OUTPUT]
+---------------------------------------------------------
+INVOICE PEMBELIAN VOUCHER MAKANAN
+---------------------------------------------------------
+Nama Pelanggan     : Citra Anggraini
+Merchant           : FoodHub
+Nominal Voucher    : Rp100.000
+Biaya Admin        : Rp3.000
+Total Pembayaran   : Rp103.000
+Kode Voucher       : FOOD-5542-8765-3342
+Tanggal Transaksi  : {tanggal_transaksi}
+Status             : Berhasil
+---------------------------------------------------------
+
+
+---------------------------------------------------------
+11. LAYANAN: QURBAN
+---------------------------------------------------------
+[INPUT BODY]
+{
+  "customer_name": "Hendra Gunawan",
+  "jenis_hewan": "Kambing",
+  "service_code": "QURBAN"
+}
+
+[INVOICE OUTPUT]
+---------------------------------------------------------
+INVOICE PEMBAYARAN QURBAN
+---------------------------------------------------------
+Nama Pelanggan     : Hendra Gunawan
+Jenis Hewan        : Kambing
+Donasi Qurban      : Rp200.000
+Biaya Admin        : Rp10.000
+Total Pembayaran   : Rp210.000
+Tanggal Transaksi  : {tanggal_transaksi}
+Status             : Berhasil
+---------------------------------------------------------
+
+
+---------------------------------------------------------
+12. LAYANAN: ZAKAT
+---------------------------------------------------------
+[INPUT BODY]
+{
+  "customer_name": "Nuraini",
+  "jenis_zakat": "Zakat Mal",
+  "nominal": 300000,
+  "service_code": "ZAKAT"
+}
+
+[INVOICE OUTPUT]
+---------------------------------------------------------
+INVOICE PEMBAYARAN ZAKAT
+---------------------------------------------------------
+Nama Donatur       : Nuraini
+Jenis Zakat        : Zakat Mal
+Nominal Zakat      : Rp300.000
+Biaya Admin        : Rp5.000
+Total Pembayaran   : Rp305.000
+Tanggal Transaksi  : {tanggal_transaksi}
+Status             : Tersalurkan
+---------------------------------------------------------
+
+
+============================================================
+DATABASE STRUCTURE UPDATE
+============================================================
+
+Tabel services telah diperbarui dengan kolom admin_fee yang berisi biaya admin untuk setiap layanan.
+
+Tabel transactions telah diperbarui dengan kolom admin_fee untuk menyimpan biaya admin per transaksi.
+
+Tabel detail transaksi terpisah telah dibuat untuk setiap jenis layanan:
+- transaction_details_pajak
+- transaction_details_pln
+- transaction_details_pdam
+- transaction_details_pulsa
+- transaction_details_pgn
+- transaction_details_musik
+- transaction_details_tv
+- transaction_details_paket_data
+- transaction_details_voucher_game
+- transaction_details_voucher_makanan
+- transaction_details_qurban
+- transaction_details_zakat
+
+Setiap tabel detail memiliki foreign key ke tabel transactions dan menyimpan field-field spesifik sesuai kebutuhan layanan tersebut.
+
+============================================================
+END OF FILE
+============================================================

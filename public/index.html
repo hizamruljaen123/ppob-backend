@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIMS PPOB API Documentation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 280px;
+            background-color: #2c3e50;
+            color: white;
+            padding: 20px 0;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+
+        .sidebar-header {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid #34495e;
+        }
+
+        .sidebar-header h1 {
+            font-size: 1.4em;
+            color: #ecf0f1;
+            margin-bottom: 5px;
+        }
+
+        .sidebar-header p {
+            font-size: 0.9em;
+            color: #bdc3c7;
+            line-height: 1.4;
+        }
+
+        .nav-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .nav-item {
+            margin: 5px 0;
+        }
+
+        .nav-link {
+            display: block;
+            padding: 12px 20px;
+            color: #ecf0f1;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-link:hover {
+            background-color: #34495e;
+            border-left-color: #3498db;
+            color: white;
+        }
+
+        .nav-link.active {
+            background-color: #3498db;
+            border-left-color: #2980b9;
+            color: white;
+        }
+
+        .nav-section {
+            margin-top: 20px;
+            padding: 0 20px;
+        }
+
+        .nav-section-title {
+            font-size: 0.9em;
+            color: #95a5a6;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 30px;
+        }
+
+        .content-header {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .content-header h1 {
+            color: #2c3e50;
+            font-size: 2.2em;
+            margin-bottom: 10px;
+        }
+
+        .content-header p {
+            color: #6c757d;
+            font-size: 1.1em;
+            line-height: 1.6;
+        }
+
+        .content-area {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        /* Markdown styling */
+        .markdown-content h1,
+        .markdown-content h2,
+        .markdown-content h3,
+        .markdown-content h4,
+        .markdown-content h5,
+        .markdown-content h6 {
+            color: #2c3e50;
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
+            line-height: 1.3;
+        }
+
+        .markdown-content h1 { font-size: 2em; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        .markdown-content h2 { font-size: 1.6em; border-bottom: 1px solid #bdc3c7; padding-bottom: 5px; }
+        .markdown-content h3 { font-size: 1.4em; color: #34495e; }
+        .markdown-content h4 { font-size: 1.2em; color: #34495e; }
+
+        .markdown-content p {
+            margin-bottom: 1em;
+            line-height: 1.7;
+        }
+
+        .markdown-content ul,
+        .markdown-content ol {
+            margin-bottom: 1em;
+            padding-left: 2em;
+        }
+
+        .markdown-content li {
+            margin-bottom: 0.5em;
+        }
+
+        .markdown-content pre {
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 1.5em 0;
+            font-size: 1em;
+            line-height: 1.5;
+            font-family: 'Courier New', Consolas, monospace;
+        }
+
+        .markdown-content code {
+            background-color: #f8f9fa;
+            color: #e74c3c;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+
+        .markdown-content pre code {
+            background: none;
+            color: inherit;
+            padding: 0;
+        }
+
+        .markdown-content blockquote {
+            border-left: 4px solid #3498db;
+            padding-left: 15px;
+            margin: 1em 0;
+            color: #555;
+            font-style: italic;
+        }
+
+        .markdown-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin: 1em 0;
+        }
+
+        .markdown-content table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 1.5em 0;
+            background-color: white;
+        }
+
+        .markdown-content th,
+        .markdown-content td {
+            border: 1px solid #dee2e6;
+            padding: 12px;
+            text-align: left;
+        }
+
+        .markdown-content th {
+            background-color: #3498db;
+            color: white;
+            font-weight: bold;
+        }
+
+        .markdown-content tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        .api-endpoint {
+            background-color: #e8f4fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #3498db;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+            font-size: 1.2em;
+            color: #6c757d;
+        }
+
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #f5c6cb;
+            margin: 20px 0;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1>SIMS PPOB API</h1>
+                <p>Payment Point Online Bank System Documentation</p>
+            </div>
+
+            <nav>
+                <ul class="nav-list">
+                    <li class="nav-item">
+                        <a href="#overview" class="nav-link active" data-section="overview">Overview</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#features" class="nav-link" data-section="features">Features</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#installation" class="nav-link" data-section="installation">Installation</a>
+                    </li>
+                </ul>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">API Endpoints</div>
+                    <ul class="nav-list">
+                        <li class="nav-item">
+                            <a href="#membership" class="nav-link" data-section="membership">1. Membership</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#information" class="nav-link" data-section="information">2. Information</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#transaction" class="nav-link" data-section="transaction">3. Transaction</a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Reference</div>
+                    <ul class="nav-list">
+                        <li class="nav-item">
+                            <a href="#response-format" class="nav-link" data-section="response-format">Response Format</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#error-codes" class="nav-link" data-section="error-codes">Error Codes</a>
+                        </li>
+                        
+                        <li class="nav-item">
+                            <a href="#database" class="nav-link" data-section="database">Database</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#development" class="nav-link" data-section="development">Development</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#environment" class="nav-link" data-section="environment">Environment</a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="content-header">
+                <h1>SIMS PPOB API Documentation</h1>
+                <p>Complete API documentation for the SIMS Payment Point Online Bank system built with Express.js and MySQL</p>
+            </header>
+
+            <div class="content-area">
+                <div id="content-display" class="markdown-content">
+                    <div class="loading">Loading documentation...</div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            let readmeContent = '';
+
+            // Load README content
+            fetch('/api/readme')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 0) {
+                        readmeContent = data.data.content;
+                        displayContent('overview');
+                    } else {
+                        showError('Failed to load documentation');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading README:', error);
+                    showError('Error loading documentation');
+                });
+
+            // Navigation handling
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+
+                    // Update active state
+                    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                    this.classList.add('active');
+
+                    const section = this.getAttribute('data-section');
+                    displayContent(section);
+                });
+            });
+
+            function displayContent(section) {
+                const contentDisplay = document.getElementById('content-display');
+
+                if (!readmeContent) {
+                    contentDisplay.innerHTML = '<div class="loading">Loading documentation...</div>';
+                    return;
+                }
+
+                if (section === 'overview') {
+                    // Show full content for overview
+                    contentDisplay.innerHTML = readmeContent;
+                } else {
+                    // Show specific section
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = readmeContent;
+
+                    const sectionElement = tempDiv.querySelector(`a[id="${section}"]`);
+                    if (sectionElement) {
+                        // Find the parent heading and following content until next heading
+                        let currentElement = sectionElement.parentElement;
+                        let sectionContent = '';
+
+                        // Add the heading
+                        sectionContent += currentElement.outerHTML;
+
+                        // Get all sibling elements until next h1, h2, etc.
+                        currentElement = currentElement.nextElementSibling;
+                        while (currentElement) {
+                            if (currentElement.tagName && currentElement.tagName.match(/^H[1-6]$/)) {
+                                // Check if it's a main section (H2) or sub-section (H3)
+                                if (currentElement.tagName === 'H2') {
+                                    break; // Stop at next H2 (main section)
+                                }
+                            }
+                            sectionContent += currentElement.outerHTML;
+                            currentElement = currentElement.nextElementSibling;
+                        }
+
+                        contentDisplay.innerHTML = sectionContent;
+                    } else {
+                        // Fallback to full content
+                        contentDisplay.innerHTML = readmeContent;
+                    }
+                }
+
+                // Scroll to top of content area
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
+            function showError(message) {
+                const contentDisplay = document.getElementById('content-display');
+                contentDisplay.innerHTML = `<div class="error">${message}</div>`;
+            }
+        });
+    </script>
+</body>
+</html>
