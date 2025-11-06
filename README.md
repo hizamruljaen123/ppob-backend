@@ -59,6 +59,10 @@ API untuk Sistem Informasi Manajemen SIMS PPOB (Payment Point Online Bank) mengg
 4. **Konfigurasi environment**
    - Copy `.env.example` ke `.env`
    - Sesuaikan konfigurasi database dan JWT secret di file `.env`
+   - Tambahkan `DROPBOX_ACCESS_TOKEN` untuk upload gambar ke Dropbox
+     ```
+     DROPBOX_ACCESS_TOKEN=your_dropbox_access_token_here
+     ```
 
 5. **Jalankan aplikasi**
    ```bash
@@ -66,6 +70,11 @@ API untuk Sistem Informasi Manajemen SIMS PPOB (Payment Point Online Bank) mengg
    # atau untuk development
    npm run dev
    ```
+
+## Postman Collection untuk Pengujian
+
+Gunakan koleksi Postman berikut untuk menguji endpoint API:
+- https://web.postman.co/workspace/My-Workspace~619c3bae-7638-4036-8e24-eebccb8e40d8/collection/24526800-36fd5d7c-e87e-4f77-bcf8-891e9d466450
 
 ## <a id="api-endpoints"></a>API Endpoints
 
@@ -170,20 +179,44 @@ API untuk Sistem Informasi Manajemen SIMS PPOB (Payment Point Online Bank) mengg
 #### PUT /profile/image
 **Type**: Private (Perlu Bearer Token JWT)
 
+Backend melakukan upload ke Dropbox menggunakan Dropbox Content API. Pastikan environment memiliki `DROPBOX_ACCESS_TOKEN`.
+
 **Input**:
-- Header: `Authorization: Bearer {token}`
+- Header: `Authorization: Bearer {token}` (JWT untuk endpoint API ini)
 - Body (form-data):
   - Field: `file` (wajib)
   - Tipe file yang didukung: `image/jpeg`, `image/png`
   - Ukuran maksimum file: `5MB`
   - Catatan: Nama field harus `file`
 
-**Contoh Request (cURL)**:
-```sh
-curl -X PUT http://localhost:3000/profile/image \
-  -H "Authorization: Bearer {token}" \
-  -F "file=@/path/to/profile.jpg"
+Setelah file diterima, backend mengunggah ke Dropbox menggunakan endpoint berikut:
+
+**Dropbox Content API Upload**
 ```
+POST https://content.dropboxapi.com/2/files/upload
+```
+
+**Contoh Request (cURL) ke Dropbox**:
+```sh
+curl -X POST https://content.dropboxapi.com/2/files/upload \
+    --header "Authorization: Bearer <get access token>" \
+    --header "Dropbox-API-Arg: {\"autorename\":false,\"mode\":\"add\",\"mute\":false,\"path\":\"/Homework/math/Matrices.txt\",\"strict_conflict\":false}" \
+    --header "Content-Type: application/octet-stream" \
+    --data-binary @local_file.txt
+```
+
+**Parameter (Dropbox-API-Arg)**:
+```json
+{
+  "autorename": false,
+  "mode": "add",
+  "mute": false,
+  "path": "/Homework/math/Matrices.txt",
+  "strict_conflict": false
+}
+```
+
+Backend akan menghasilkan URL gambar menggunakan temporary link Dropbox dan menyimpannya pada `profile_image` user.
 
 **Output Success**:
 ```json
@@ -194,7 +227,7 @@ curl -X PUT http://localhost:3000/profile/image \
     "email": "user@nutech-integrasi.com",
     "first_name": "User Edited",
     "last_name": "Nutech Edited",
-    "profile_image": "https://yoururlapi.com/profile-updated.jpeg"
+    "profile_image": "https://content.dropboxapi.com/temporary-link"
   }
 }
 ```
@@ -561,3 +594,37 @@ Setiap tabel detail memiliki foreign key ke tabel `transactions` dan menyimpan f
 
 ![Database Relationship Schema](public/relasi.png)
 
+
+## Dropbox Configuration Notes
+
+- App folder name: telkom_os
+- For Dropbox apps with "App folder" permission, all paths in requests are relative to this app folder.
+- Backend uploads profile images under the app folder using a path like: `/profile-images/{email}-{timestamp}{ext}`.
+- Ensure environment includes:
+  ```
+  DROPBOX_APP_FOLDER=telkom_os
+  ```
+
+## Dropbox OAuth scopes and troubleshooting
+
+Required scopes for the current implementation:
+- files.content.write — needed by POST https://content.dropboxapi.com/2/files/upload used in [uploadProfileImage()](controllers/profileController.js:100)
+- files.content.read — needed by POST https://api.dropboxapi.com/2/files/get_temporary_link used in [uploadProfileImage()](controllers/profileController.js:151)
+- files.metadata.read — recommended for reading metadata (optional for this flow)
+
+How to fix 401 missing_scope:
+- If you see `missing_scope` with `required_scope: "files.content.write"`, regenerate the OAuth access token with the scope files.content.write enabled.
+- If the temporary link call returns `missing_scope` for read scope, add files.content.read and regenerate the token.
+- Ensure your Dropbox app has “App folder” access type and the required scopes enabled in the Dropbox App Console, then generate a new short-lived access token.
+
+Environment variables to set:
+```
+DROPBOX_ACCESS_TOKEN=your_token_with_required_scopes
+DROPBOX_APP_KEY=9wwbc5ffzmkm8ca
+DROPBOX_APP_SECRET=813us7uvcw9ne1c
+DROPBOX_APP_FOLDER=telkom_os
+```
+
+Notes:
+- For “App folder” apps, all API paths are relative to the app folder. Do not prefix paths with `/telkom_os`; Dropbox isolates the app folder automatically.
+- The backend constructs paths like `/profile-images/{email}-{timestamp}{ext}` in [uploadProfileImage()](controllers/profileController.js:121).

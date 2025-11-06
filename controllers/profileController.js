@@ -4,17 +4,8 @@ const { isValidImageFormat } = require('../utils/validation');
 const multer = require('multer');
 const path = require('path');
 
-// Konfigurasi multer untuk upload gambar
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'uploads/'); // Folder untuk menyimpan gambar
-  },
-  filename: function (req, file, cb) {
-    // Membuat nama file unik dengan timestamp
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
-  }
-});
+ // Konfigurasi multer untuk upload gambar (in-memory, akan di-upload ke Dropbox)
+const storage = multer.memoryStorage();
 
 // Filter untuk memastikan hanya file gambar yang diterima
 const fileFilter = (req, file, cb) => {
@@ -105,7 +96,7 @@ const updateProfile = async (req, res) => {
   }
 };
 
-// Fungsi untuk mengupload gambar profile
+ // Fungsi untuk mengupload gambar profile (upload ke Dropbox)
 const uploadProfileImage = async (req, res) => {
   try {
     const email = req.user.email;
@@ -119,8 +110,94 @@ const uploadProfileImage = async (req, res) => {
       });
     }
 
-    // Path lengkap untuk gambar yang diupload
-    const imageUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+    const accessToken = process.env.DROPBOX_ACCESS_TOKEN;
+    if (!accessToken) {
+      throw new Error('DROPBOX_ACCESS_TOKEN is missing');
+    }
+
+    // Tentukan path file di Dropbox
+    const ext = path.extname(req.file.originalname)?.toLowerCase() || '.jpg';
+    const timestamp = Date.now();
+    const dropboxPath = `/profile-images/${email}-${timestamp}${ext}`;
+
+    const dropboxArgs = {
+      autorename: false,
+      mode: 'add',
+      mute: false,
+      path: dropboxPath,
+      strict_conflict: false
+    };
+
+    // Upload file ke Dropbox Content API
+    const uploadResp = await fetch('https://content.dropboxapi.com/2/files/upload', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Dropbox-API-Arg': JSON.stringify(dropboxArgs),
+        'Content-Type': 'application/octet-stream'
+      },
+      body: req.file.buffer
+    });
+
+    if (!uploadResp.ok) {
+      let bodyText = await uploadResp.text();
+      try {
+        const errJson = JSON.parse(bodyText);
+        if (
+          uploadResp.status === 401 &&
+          ((errJson.error && errJson.error['.tag'] === 'missing_scope') ||
+            (errJson.error_summary && errJson.error_summary.includes('missing_scope')))
+        ) {
+          const required = (errJson.error && errJson.error.required_scope) || 'files.content.write';
+          return res.status(500).json({
+            status: 500,
+            message: `Konfigurasi Dropbox tidak memiliki scope yang dibutuhkan: ${required}. Mohon regenerasi Access Token dengan scope tersebut (contoh: files.content.write).`,
+            data: null
+          });
+        }
+      } catch (_) {}
+      throw new Error(`Dropbox upload failed: ${uploadResp.status} ${bodyText}`);
+    }
+    const uploadJson = await uploadResp.json();
+
+    // Dapatkan temporary link agar bisa diakses sebagai URL
+    let imageUrl = null;
+    try {
+      const linkResp = await fetch('https://api.dropboxapi.com/2/files/get_temporary_link', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ path: uploadJson.path_lower || dropboxPath })
+      });
+
+      if (!linkResp.ok) {
+        let linkText = await linkResp.text();
+        try {
+          const linkErr = JSON.parse(linkText);
+          if (
+            linkResp.status === 401 &&
+            ((linkErr.error && linkErr.error['.tag'] === 'missing_scope') ||
+              (linkErr.error_summary && linkErr.error_summary.includes('missing_scope')))
+          ) {
+            console.error('Dropbox temporary link missing scope:', (linkErr.error && linkErr.error.required_scope) || 'files.content.read');
+          }
+        } catch (__) {
+          // ignore parse error
+        }
+      } else {
+        const linkJson = await linkResp.json();
+        imageUrl = linkJson.link;
+      }
+    } catch (_) {
+      // Abaikan, fallback di bawah
+    }
+
+    // Fallback bila gagal dapat temporary link
+    if (!imageUrl) {
+      imageUrl = `dropbox:${uploadJson.path_lower || dropboxPath}`;
+    }
 
     // Mengupdate profile_image di database menggunakan model
     await User.updateByEmail(email, { profile_image: imageUrl });
@@ -142,6 +219,14 @@ const uploadProfileImage = async (req, res) => {
       return res.status(400).json({
         status: 102,
         message: 'Format Image tidak sesuai',
+        data: null
+      });
+    }
+
+    if (error.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({
+        status: 102,
+        message: 'Ukuran file terlalu besar',
         data: null
       });
     }

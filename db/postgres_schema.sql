@@ -130,6 +130,13 @@ CREATE TABLE IF NOT EXISTS transaction_details_voucher_makanan (
   kode_voucher VARCHAR(50)
 );
 
+CREATE TABLE IF NOT EXISTS transaction_details_qurban (
+  id SERIAL PRIMARY KEY,
+  transaction_id INTEGER NOT NULL REFERENCES transactions(id) ON DELETE CASCADE,
+  customer_name VARCHAR(255) NOT NULL,
+  jenis_hewan VARCHAR(100) NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS transaction_details_zakat (
   id SERIAL PRIMARY KEY,
   transaction_id INTEGER NOT NULL REFERENCES transactions(id) ON DELETE CASCADE,
