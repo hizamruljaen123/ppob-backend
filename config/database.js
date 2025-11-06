@@ -1,24 +1,34 @@
-// Konfigurasi dan koneksi database
-const mysql = require('mysql2/promise');
+// Konfigurasi dan koneksi database (PostgreSQL)
+const { Pool } = require('pg');
 require('dotenv').config();
 
-// Membuat connection pool untuk performa yang lebih baik
-const pool = mysql.createPool({
-  host: process.env.DB_HOST || 'localhost',
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || '',
-  database: process.env.DB_NAME || 'sims_ppob',
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0
+// Build connection string from env (prefer DATABASE_URL for serverless providers like Neon)
+function buildConnFromLegacyEnv() {
+  const { DB_HOST, DB_USER, DB_PASSWORD, DB_NAME } = process.env;
+  if (DB_HOST && DB_USER && DB_NAME) {
+    const user = encodeURIComponent(DB_USER);
+    const pwd = DB_PASSWORD ? `:${encodeURIComponent(DB_PASSWORD)}` : '';
+    return `postgresql://${user}${pwd}@${DB_HOST}/${DB_NAME}`;
+  }
+  return undefined;
+}
+
+const connectionString = process.env.DATABASE_URL || buildConnFromLegacyEnv();
+
+// Initialize pool with SSL for Neon (serverless Postgres)
+const pool = new Pool({
+  connectionString,
+  // Neon requires SSL; local PG usually not. DATABASE_URL presence => assume remote SSL.
+  ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
 });
 
 // Menguji koneksi database
 async function testConnection() {
   try {
-    const connection = await pool.getConnection();
-    console.log('Database berhasil terkoneksi');
-    connection.release();
+    const client = await pool.connect();
+    await client.query('SELECT 1');
+    client.release();
+    console.log('Database PostgreSQL berhasil terkoneksi');
     return true;
   } catch (error) {
     console.error('Koneksi database gagal:', error.message);
@@ -26,11 +36,22 @@ async function testConnection() {
   }
 }
 
-// Menjalankan query SQL mentah
+// Utility: convert "?" placeholders to $1, $2, ... for pg
+function toPgParams(sql, params = []) {
+  let idx = 0;
+  const text = sql.replace(/\?/g, () => {
+    idx += 1;
+    return `$${idx}`;
+  });
+  return { text, params };
+}
+
+// Menjalankan query SQL
 async function executeQuery(sql, params = []) {
   try {
-    const [rows] = await pool.execute(sql, params);
-    return rows;
+    const { text, params: pgParams } = toPgParams(sql, params);
+    const result = await pool.query(text, pgParams);
+    return result.rows;
   } catch (error) {
     console.error('Error query database:', error.message);
     throw error;
@@ -46,8 +67,16 @@ async function getSingleRow(sql, params = []) {
 // Menyisipkan data dan mengembalikan ID yang disisipkan
 async function insertRow(sql, params = []) {
   try {
-    const [result] = await pool.execute(sql, params);
-    return result.insertId;
+    // Tambahkan RETURNING id jika belum ada
+    let returningSql = sql.trim();
+    if (!/\breturning\b/i.test(returningSql)) {
+      // Pastikan tidak ada ; di akhir sebelum menambahkan RETURNING
+      returningSql = returningSql.replace(/;?$/, ' RETURNING id');
+    }
+    const { text, params: pgParams } = toPgParams(returningSql, params);
+    const result = await pool.query(text, pgParams);
+    const row = result.rows && result.rows[0];
+    return row ? row.id : null;
   } catch (error) {
     console.error('Error insert database:', error.message);
     throw error;

@@ -528,26 +528,3 @@ Setiap tabel detail memiliki foreign key ke tabel `transactions` dan menyimpan f
 
 ![Database Relationship Schema](public/relasi.png)
 
-## <a id="development"></a>Development
-
-Untuk development, gunakan:
-```bash
-npm run dev
-```
-
-Server akan restart otomatis ketika ada perubahan file.
-
-## <a id="environment"></a>Environment Variables
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| DB_HOST | Host database MySQL | localhost |
-| DB_USER | Username database | root |
-| DB_PASSWORD | Password database | (empty) |
-| DB_NAME | Nama database | sims_ppob |
-| JWT_SECRET | Secret key untuk JWT | your-super-secret-jwt-key |
-| PORT | Port server | 3000 |
-
-## Lisensi
-
-ISC

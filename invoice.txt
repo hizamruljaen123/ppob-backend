@@ -1,10 +1,6 @@
 ============================================================
-REQUIREMENT FORMAT INVOICE PPOB
+INVOICE FORMAT PPOB
 ============================================================
-
-Berikut adalah standar format input (request body) dan output (invoice format)
-untuk setiap jenis layanan PPOB berdasarkan tipe layanan.
-
 ---------------------------------------------------------
 1. LAYANAN: PAJAK (Pajak PBB)
 ---------------------------------------------------------
