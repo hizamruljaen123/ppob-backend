@@ -595,36 +595,4 @@ Setiap tabel detail memiliki foreign key ke tabel `transactions` dan menyimpan f
 ![Database Relationship Schema](public/relasi.png)
 
 
-## Dropbox Configuration Notes
 
-- App folder name: telkom_os
-- For Dropbox apps with "App folder" permission, all paths in requests are relative to this app folder.
-- Backend uploads profile images under the app folder using a path like: `/profile-images/{email}-{timestamp}{ext}`.
-- Ensure environment includes:
-  ```
-  DROPBOX_APP_FOLDER=telkom_os
-  ```
-
-## Dropbox OAuth scopes and troubleshooting
-
-Required scopes for the current implementation:
-- files.content.write — needed by POST https://content.dropboxapi.com/2/files/upload used in [uploadProfileImage()](controllers/profileController.js:100)
-- files.content.read — needed by POST https://api.dropboxapi.com/2/files/get_temporary_link used in [uploadProfileImage()](controllers/profileController.js:151)
-- files.metadata.read — recommended for reading metadata (optional for this flow)
-
-How to fix 401 missing_scope:
-- If you see `missing_scope` with `required_scope: "files.content.write"`, regenerate the OAuth access token with the scope files.content.write enabled.
-- If the temporary link call returns `missing_scope` for read scope, add files.content.read and regenerate the token.
-- Ensure your Dropbox app has “App folder” access type and the required scopes enabled in the Dropbox App Console, then generate a new short-lived access token.
-
-Environment variables to set:
-```
-DROPBOX_ACCESS_TOKEN=your_token_with_required_scopes
-DROPBOX_APP_KEY=9wwbc5ffzmkm8ca
-DROPBOX_APP_SECRET=813us7uvcw9ne1c
-DROPBOX_APP_FOLDER=telkom_os
-```
-
-Notes:
-- For “App folder” apps, all API paths are relative to the app folder. Do not prefix paths with `/telkom_os`; Dropbox isolates the app folder automatically.
-- The backend constructs paths like `/profile-images/{email}-{timestamp}{ext}` in [uploadProfileImage()](controllers/profileController.js:121).
