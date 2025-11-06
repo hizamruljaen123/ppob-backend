@@ -169,7 +169,22 @@ API untuk Sistem Informasi Manajemen SIMS PPOB (Payment Point Online Bank) mengg
 
 #### PUT /profile/image
 **Type**: Private (Perlu Bearer Token JWT)
-**Input**: Header `Authorization: Bearer {token}`, Form-data `file` (JPEG/PNG)
+
+**Input**:
+- Header: `Authorization: Bearer {token}`
+- Body (form-data):
+  - Field: `file` (wajib)
+  - Tipe file yang didukung: `image/jpeg`, `image/png`
+  - Ukuran maksimum file: `5MB`
+  - Catatan: Nama field harus `file`
+
+**Contoh Request (cURL)**:
+```sh
+curl -X PUT http://localhost:3000/profile/image \
+  -H "Authorization: Bearer {token}" \
+  -F "file=@/path/to/profile.jpg"
+```
+
 **Output Success**:
 ```json
 {
@@ -181,6 +196,24 @@ API untuk Sistem Informasi Manajemen SIMS PPOB (Payment Point Online Bank) mengg
     "last_name": "Nutech Edited",
     "profile_image": "https://yoururlapi.com/profile-updated.jpeg"
   }
+}
+```
+
+**Output Error (Format tidak sesuai / tanpa file)**:
+```json
+{
+  "status": 102,
+  "message": "Format Image tidak sesuai",
+  "data": null
+}
+```
+
+**Output Error (Ukuran file terlalu besar)**:
+```json
+{
+  "status": 102,
+  "message": "Ukuran file terlalu besar",
+  "data": null
 }
 ```
 
