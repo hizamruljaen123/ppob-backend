@@ -3,7 +3,6 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
-const { marked } = require('marked');
 const { testConnection } = require('./config/database');
 
 // Import routes
@@ -35,8 +34,9 @@ app.use('/', informationRoutes); // Routes untuk informasi (banner dan services)
 app.use('/', transactionRoutes); // Routes untuk transaksi (balance, topup, transaction, history)
 
 // Route untuk API README
-app.get('/api/readme', (req, res) => {
+app.get('/api/readme', async (req, res) => {
   try {
+    const { marked } = await import('marked');
     const readmePath = path.join(__dirname, 'README.md');
     const readmeContent = fs.readFileSync(readmePath, 'utf-8');
     const htmlContent = marked.parse(readmeContent);
